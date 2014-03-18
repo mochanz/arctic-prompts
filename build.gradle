@@ -37,19 +37,10 @@ task generateText(dependsOn: downloadPromptList) {
 }
 
 task synthesizeBeep(type: Exec) {
-    def beepWavFile = file("$buildDir/$beepWavFileName")
-    outputs.files beepWavFile
-    executable sox
-    args '-n', beepWavFileName, 'synth', beepDuration, 'sin', beepFrequency
-    workingDir buildDir
-}
-
-task transcodeBeep(type: Exec, dependsOn:synthesizeBeep) {
     def beepFile = file("$buildDir/$beepFileName")
-    def beepWavFile = file("$buildDir/$beepWavFileName")
     outputs.files beepFile
-    executable 'lame'
-    args beepWavFile, beepFile
+    executable sox
+    args '-n', beepFileName, 'synth', beepDuration, 'sin', beepFrequency
     workingDir buildDir
 }
 
@@ -89,7 +80,7 @@ task generateLaTeX(dependsOn: downloadPromptList) {
     }
 }
 
-task compileLaTeX(type: Exec, dependsOn: [generateLaTeX, transcodeBeep]) {
+task compileLaTeX(type: Exec, dependsOn: [generateLaTeX, synthesizeBeep]) {
     def texFile = generateLaTeX.outputs.files.singleFile
     inputs.files texFile, synthesizeBeep.outputs.files.singleFile
     outputs.files file("$buildDir/prompts.pdf")
